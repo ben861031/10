@@ -1025,7 +1025,7 @@
     table {
       border-collapse: separate;
       border-spacing: 0;
-      min-width: 920px;
+      min-width: 766px;
     }
 
     th {
@@ -1035,14 +1035,21 @@
       font-size: 14px;
       font-weight: 800;
       border-bottom: 2px solid #e2e8f0;
+      border-right: 1px solid #e8eef6;
       text-align: center;
     }
 
     td {
       padding: 16px 12px;
       border-bottom: 1px solid #f1f5f9;
+      border-right: 1px solid #edf2f7;
       text-align: center;
       font-size: 15px;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
     }
 
     tbody tr {
@@ -1065,11 +1072,11 @@
     }
 
     .col-select { width: 56px; }
-    .col-name { width: 130px; }
-    .col-id { width: 120px; }
-    .col-email { width: 34%; }
-    .col-dept { width: 190px; }
-    .col-title { width: 120px; }
+    .col-dept { width: 110px; }
+    .col-name { width: 110px; }
+    .col-id { width: 90px; }
+    .col-email { width: 300px; }
+    .col-title { width: 100px; }
 
     .badge {
       justify-content: center;
@@ -1678,19 +1685,19 @@
         <table>
           <colgroup>
             <col class="col-select">
+            <col class="col-dept">
             <col class="col-name">
             <col class="col-id">
             <col class="col-email">
-            <col class="col-dept">
             <col class="col-title">
           </colgroup>
           <thead>
             <tr>
               <th class="check-col">選取</th>
+              <th>部門</th>
               <th>姓名</th>
               <th>員工編號</th>
               <th>Email</th>
-              <th>部門</th>
               <th>職稱</th>
             </tr>
           </thead>
@@ -1700,6 +1707,7 @@
                 <td class="check-col">
                   <input type="checkbox" data-person-id="${escapeAttr(person.id)}" ${state.selectedIds.has(person.id) ? "checked" : ""} aria-label="選取 ${escapeAttr(person.name || person.email)}">
                 </td>
+                <td>${escapeHtml(displayDepartmentName(person.department || "未分類"))}</td>
                 <td>
                   <div class="person">
                     <strong>${escapeHtml(person.name || "-")}</strong>
@@ -1707,7 +1715,6 @@
                 </td>
                 <td>${escapeHtml(person.employeeId || "-")}</td>
                 <td class="email">${escapeHtml(person.email || "-")}</td>
-                <td>${escapeHtml(displayDepartmentName(person.department || "未分類"))}</td>
                 <td>${escapeHtml(person.title || "-")}</td>
               </tr>
             `).join("")}

@@ -1,5 +1,5 @@
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse("127.0.0.1"), 8789)
+$listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse("127.0.0.1"), 8793)
 $listener.Start()
 
 function Send-Response {
