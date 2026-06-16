@@ -1,0 +1,2122 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>公司人員 Email 管理</title>
+  <script src="./xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #637083;
+      --line: #dbe2ea;
+      --accent: #1769aa;
+      --accent-strong: #0f4d7d;
+      --green: #247a57;
+      --amber: #9a6400;
+      --red: #b42318;
+      --soft-blue: #e8f2fb;
+      --soft-green: #e9f6ef;
+      --soft-red: #fdeceb;
+      --shadow: 0 18px 55px rgba(30, 41, 59, .10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #101820;
+      color: #f8fafc;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 6px 6px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #28a27a, #1769aa);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.25;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: #b8c4d1;
+      font-size: 13px;
+    }
+
+    .upload-box {
+      background: rgba(255, 255, 255, .08);
+      border: 1px dashed rgba(255, 255, 255, .32);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .upload-box label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .upload-box input {
+      width: 100%;
+      color: #e6edf5;
+      font-size: 13px;
+    }
+
+    .upload-note {
+      margin: 10px 0 0;
+      color: #b8c4d1;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .manage-section {
+      margin-top: 18px;
+    }
+
+    .dept-order-panel {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #f8fbff;
+      border: 1px solid #dbeafe;
+    }
+
+    .dept-order-heading {
+      margin: 0 0 10px;
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .dept-order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dept-order-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 6px;
+      align-items: center;
+      min-height: 34px;
+      padding: 6px 6px 6px 10px;
+      border-radius: 10px;
+      background: white;
+      border: 1px solid #e2e8f0;
+    }
+
+    .dept-order-name {
+      min-width: 0;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .order-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-weight: 900;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+    }
+
+    .order-btn:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .manage-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .manage-menu-btn {
+      width: 100%;
+      min-height: 42px;
+      border-radius: 12px;
+      padding: 9px 12px;
+      background: #f8fbff;
+      color: #334155;
+      border: 1px solid #dbeafe;
+      font-weight: 800;
+      text-align: left;
+      transition: .2s;
+    }
+
+    .manage-menu-btn:hover,
+    .manage-menu-btn.active {
+      background: linear-gradient(135deg, #2563eb, #4f8cff);
+      color: white;
+      border-color: transparent;
+      transform: translateX(4px);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, .18);
+    }
+
+    .settings-panel {
+      padding: 22px;
+    }
+
+    .settings-grid {
+      display: grid;
+      gap: 14px;
+      max-width: 900px;
+    }
+
+    .settings-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, .04);
+    }
+
+    .settings-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #0f172a;
+    }
+
+    .settings-card p {
+      margin: 0 0 14px;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .settings-card input[type="file"],
+    .alias-input,
+    .order-textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: white;
+    }
+
+    .order-textarea {
+      min-height: 220px;
+      resize: vertical;
+      line-height: 1.55;
+      font-family: inherit;
+    }
+
+    .alias-row {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(160px, 240px);
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eef2f7;
+    }
+
+    .alias-row:last-child {
+      border-bottom: 0;
+    }
+
+    .alias-full {
+      color: #334155;
+      font-weight: 800;
+    }
+
+    .settings-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav-title {
+      margin: 4px 6px 0;
+      color: #aebccc;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dept-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow-x: hidden;
+      overflow-y: visible;
+      padding-right: 0;
+    }
+
+    .dept-btn {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      color: #dce6f1;
+      background: transparent;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      text-align: left;
+      gap: 10px;
+    }
+
+    .dept-btn:hover,
+    .dept-btn.active {
+      background: rgba(255, 255, 255, .12);
+      color: #fff;
+    }
+
+    .dept-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .count {
+      min-width: 28px;
+      height: 22px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      background: rgba(255, 255, 255, .16);
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    main {
+      min-width: 0;
+      padding: 26px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search {
+      position: relative;
+    }
+
+    .search input {
+      width: 100%;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 0 16px 0 42px;
+      color: var(--ink);
+      outline: none;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, .03);
+    }
+
+    .search input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(23, 105, 170, .14);
+    }
+
+    .search::before {
+      content: "";
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #7a8798;
+      border-radius: 50%;
+      transform: translateY(-55%);
+    }
+
+    .search::after {
+      content: "";
+      position: absolute;
+      left: 28px;
+      top: 29px;
+      width: 8px;
+      height: 2px;
+      background: #7a8798;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      min-height: 40px;
+      border-radius: 8px;
+      padding: 9px 13px;
+      background: #eef2f7;
+      color: #1f2937;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .btn svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 17px;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: var(--accent-strong);
+    }
+
+    .btn:hover {
+      background: #e0e8f0;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, .03);
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    .metric .value {
+      font-size: 27px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .workspace {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-head {
+      min-height: 58px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .title-block h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .title-block p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .selection-tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .mini {
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 7px;
+      background: #f1f5f9;
+      color: #253244;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .mini:hover {
+      background: #e5edf5;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      max-height: none;
+      min-height: 360px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #edf1f5;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      color: #495569;
+      font-size: 12px;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background: #f8fbfe;
+    }
+
+    .check-col {
+      width: 46px;
+      text-align: center;
+    }
+
+    input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--accent);
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-width: 0;
+    }
+
+    .person strong {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .email {
+      color: #0f5c99;
+      overflow-wrap: anywhere;
+      text-align: left;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.active {
+      color: var(--green);
+      background: var(--soft-green);
+    }
+
+    .badge.left {
+      color: var(--red);
+      background: var(--soft-red);
+    }
+
+    .empty {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      padding: 36px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      max-width: min(420px, calc(100vw - 44px));
+      padding: 13px 15px;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.warn {
+      background: #7a4b00;
+    }
+
+    .copy-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      place-items: center;
+      background: rgba(15, 23, 42, .35);
+      padding: 20px;
+    }
+
+    .copy-modal.show {
+      display: grid;
+    }
+
+    .copy-dialog {
+      width: min(420px, 100%);
+      background: white;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 24px 70px rgba(15, 23, 42, .25);
+      border: 1px solid #e5e7eb;
+    }
+
+    .copy-dialog h3 {
+      margin: 0 0 6px;
+      color: #0f172a;
+      font-size: 20px;
+    }
+
+    .copy-dialog p {
+      margin: 0 0 16px;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .copy-format-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .copy-format-actions .btn {
+      justify-content: center;
+    }
+
+    .modal-close {
+      width: 100%;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        min-height: auto;
+      }
+
+      .dept-list {
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: visible;
+        padding-bottom: 0;
+      }
+
+      main {
+        padding: 18px;
+      }
+
+      .topbar,
+      .table-head {
+        grid-template-columns: 1fr;
+      }
+
+      .actions,
+      .selection-tools {
+        justify-content: flex-start;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .table-wrap {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      main {
+        padding: 14px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .actions .btn,
+      .selection-tools .mini {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* 印鑑系統風格：白色側欄、藍色標題區、圓角卡片與清爽表格 */
+    body {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+      background: #f1f5f9;
+    }
+
+    .sidebar {
+      background: #ffffff;
+      color: #334155;
+      border-right: 1px solid #e5e7eb;
+      padding: 20px;
+      gap: 18px;
+      box-shadow: none;
+    }
+
+    .brand {
+      gap: 14px;
+      padding: 0 0 20px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 22px;
+      box-shadow: inset 0 0 0 1px #dbeafe;
+    }
+
+    .brand-mark svg {
+      width: 28px;
+      height: 28px;
+      display: block;
+    }
+
+    .brand h1 {
+      color: #0f172a;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .brand p {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .upload-box {
+      background: #f8fbff;
+      border: 1px solid #dbeafe;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .upload-box label {
+      color: #1d4ed8;
+      font-size: 13px;
+      letter-spacing: .3px;
+    }
+
+    .upload-box input {
+      color: #334155;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .upload-note {
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .manage-section {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 18px;
+    }
+
+    .nav-title,
+    .manage-title {
+      margin: 18px 0 12px;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .dept-list {
+      gap: 8px;
+      padding-right: 0;
+    }
+
+    .dept-btn {
+      min-height: 56px;
+      padding: 0 16px;
+      border-radius: 16px;
+      color: #334155;
+      transition: .25s;
+    }
+
+    .dept-btn:hover {
+      background: #f8fbff;
+      color: #1d4ed8;
+      transform: translateX(4px);
+    }
+
+    .dept-btn.active {
+      background: linear-gradient(135deg, #2563eb, #4f8cff);
+      color: white;
+      box-shadow: 0 12px 30px rgba(37, 99, 235, .25);
+    }
+
+    .dept-name {
+      font-size: 15px;
+    }
+
+    .count {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .dept-btn.active .count {
+      background: rgba(255, 255, 255, .22);
+      color: white;
+    }
+
+    main {
+      padding: 24px;
+      min-width: 0;
+    }
+
+    .topbar {
+      background: white;
+      border: 1px solid #eef2f7;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+    }
+
+    .search input {
+      height: 48px;
+      border-color: #e2e8f0;
+      border-radius: 14px;
+      background: white;
+      box-shadow: none;
+    }
+
+    .search input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .08);
+    }
+
+    .search::before {
+      border-color: #94a3b8;
+    }
+
+    .search::after {
+      background: #94a3b8;
+    }
+
+    .btn {
+      min-height: 42px;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, .04);
+      transition: .2s;
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      border: 0;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      box-shadow: 0 12px 24px rgba(37, 99, 235, .20);
+    }
+
+    .btn.primary:hover {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    }
+
+    .summary {
+      grid-template-columns: repeat(4, minmax(170px, 1fr));
+      gap: 18px;
+      margin: 20px 0;
+    }
+
+    .metric {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, .05);
+    }
+
+    .metric .label {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .metric .value {
+      color: #0f172a;
+      font-size: 32px;
+      font-weight: 800;
+    }
+
+    .workspace {
+      background: white;
+      border: 1px solid #eef2f7;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+      overflow: hidden;
+    }
+
+    .table-head {
+      min-height: 70px;
+      padding: 20px 22px;
+      border-bottom: 1px solid #eef2f7;
+    }
+
+    .title-block h2 {
+      color: #0f172a;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .title-block p {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .mini {
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #334155;
+      min-height: 36px;
+      transition: .2s;
+    }
+
+    .mini:hover {
+      background: #e2e8f0;
+    }
+
+    .table-wrap {
+      background: white;
+      border: 0;
+      border-radius: 0;
+      max-height: none;
+      overflow-x: auto;
+      overflow-y: visible;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 920px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #475569;
+      padding: 16px;
+      font-size: 13px;
+      font-weight: 800;
+      border-bottom: 2px solid #e2e8f0;
+      text-align: center;
+    }
+
+    td {
+      padding: 16px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    tbody tr {
+      transition: .15s;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    .person {
+      justify-content: center;
+      text-align: center;
+    }
+
+    .email {
+      color: #1d4ed8;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .col-select { width: 56px; }
+    .col-name { width: 130px; }
+    .col-id { width: 120px; }
+    .col-email { width: 34%; }
+    .col-dept { width: 190px; }
+    .col-title { width: 120px; }
+
+    .badge {
+      justify-content: center;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .badge.active {
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .badge.left {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .empty {
+      color: #64748b;
+    }
+
+    .empty strong {
+      color: #0f172a;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        min-height: auto;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      main {
+        padding: 14px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 4h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
+            <path d="M8 4v16"></path>
+            <path d="M11.5 9.5a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z"></path>
+            <path d="M10.8 16a3.7 3.7 0 0 1 6.4 0"></path>
+            <path d="M3 8h2"></path>
+            <path d="M3 12h2"></path>
+            <path d="M3 16h2"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>Email 名單管理</h1>
+          <p>Excel 匯入與快速複製</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="nav-title">部門</div>
+        <nav id="deptList" class="dept-list" aria-label="部門列表"></nav>
+      </div>
+
+      <div class="manage-section">
+        <div class="manage-title">管理區</div>
+        <div class="manage-menu">
+          <button class="manage-menu-btn" type="button" data-view="upload">上傳 / 更新 Excel</button>
+          <button class="manage-menu-btn" type="button" data-view="deptOrder">部門排序</button>
+          <button class="manage-menu-btn" type="button" data-view="deptAlias">部門簡稱</button>
+          <button class="manage-menu-btn" type="button" data-view="backup">資料備份</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="topbar">
+        <div class="search">
+          <input id="searchInput" type="search" placeholder="搜尋姓名、員工編號或 Email" autocomplete="off">
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="copyCompany" type="button" title="複製全公司在職 Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            全公司 Email
+          </button>
+          <button class="btn" id="copyDepartment" type="button" title="複製目前部門在職 Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path></svg>
+            部門 Email
+          </button>
+          <button class="btn" id="copySelected" type="button" title="複製已勾選在職 Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"></path></svg>
+            已選 Email
+          </button>
+          <button class="btn" id="copyMultiDept" type="button" title="勾選多個部門後複製 Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="m14 17 2 2 5-5"></path></svg>
+            多部門 Email
+          </button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="table-head">
+          <div class="title-block">
+            <h2 id="viewTitle">全公司</h2>
+            <p id="viewMeta">尚未上傳資料</p>
+          </div>
+          <div class="selection-tools">
+            <button class="mini" id="selectVisible" type="button">勾選目前列表</button>
+            <button class="mini" id="clearSelection" type="button">清除勾選</button>
+          </div>
+        </div>
+        <div class="table-wrap" id="tableWrap"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="copyModal" class="copy-modal" aria-hidden="true">
+    <div class="copy-dialog" role="dialog" aria-modal="true" aria-labelledby="copyModalTitle">
+      <h3 id="copyModalTitle">選擇複製格式</h3>
+      <p id="copyModalMeta">請選擇要複製的 Email 格式。</p>
+      <div class="copy-format-actions">
+        <button class="btn primary" type="button" data-copy-format="named">姓名 + Email</button>
+        <button class="btn" type="button" data-copy-format="email">純 Email</button>
+      </div>
+      <button class="btn modal-close" type="button" id="copyModalClose">取消</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "company-email-directory-v1";
+    const state = {
+      people: [],
+      selectedIds: new Set(),
+      activeDept: "__all__",
+      activeView: "directory",
+      search: "",
+      lastUploadName: "",
+      deptOrder: [],
+      deptAliases: {},
+      selectedDepartments: new Set(),
+      pendingCopyScope: null
+    };
+
+    const els = {
+      deptList: document.getElementById("deptList"),
+      search: document.getElementById("searchInput"),
+      copyCompany: document.getElementById("copyCompany"),
+      copyDepartment: document.getElementById("copyDepartment"),
+      copySelected: document.getElementById("copySelected"),
+      copyMultiDept: document.getElementById("copyMultiDept"),
+      topbar: document.querySelector(".topbar"),
+      selectionTools: document.querySelector(".selection-tools"),
+      selectVisible: document.getElementById("selectVisible"),
+      clearSelection: document.getElementById("clearSelection"),
+      viewTitle: document.getElementById("viewTitle"),
+      viewMeta: document.getElementById("viewMeta"),
+      tableWrap: document.getElementById("tableWrap"),
+      toast: document.getElementById("toast"),
+      copyModal: document.getElementById("copyModal"),
+      copyModalMeta: document.getElementById("copyModalMeta"),
+      copyModalClose: document.getElementById("copyModalClose")
+    };
+
+    const aliases = {
+      employeeId: ["員工編號", "員編", "員工代號", "工號", "Employee ID", "EmployeeId", "EmpID", "ID"],
+      name: ["姓名", "員工姓名", "Name", "中文姓名"],
+      firstName: ["FirstName", "First Name", "名"],
+      lastName: ["LastName", "Last Name", "姓"],
+      email: ["Email", "E-mail", "Email帳號", "電子郵件", "信箱", "公司信箱", "Email Address"],
+      title: ["職稱", "職位", "職務", "Title", "Job Title"],
+      department: ["部門", "部門名稱", "單位", "處室", "科別", "Department", "Dept"]
+    };
+
+    const TITLE_ORDER = ["總經理", "副總經理", "協理", "經理", "技術經理", "主辦會計", "副主任", "副經理"];
+    const EXCLUDED_DEPARTMENTS = new Set(["中興南部工程中心", "中興環工部"]);
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        const migrated = migrateStoredPeople(Array.isArray(saved.people) ? saved.people : []);
+        const filteredPeople = migrated.people.filter(person => person.status !== "left" && !isExcludedDepartment(person.department));
+        if (filteredPeople.length !== migrated.people.length) migrated.changed = true;
+        migrated.people = filteredPeople;
+        state.people = dedupeById(migrated.people);
+        state.lastUploadName = saved.lastUploadName || "";
+        state.deptOrder = Array.isArray(saved.deptOrder) ? saved.deptOrder : [];
+        state.deptAliases = saved.deptAliases && typeof saved.deptAliases === "object" ? saved.deptAliases : {};
+        if (migrated.changed) saveState();
+      } catch {
+        state.people = [];
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        people: state.people,
+        lastUploadName: state.lastUploadName,
+        deptOrder: state.deptOrder,
+        deptAliases: state.deptAliases
+      }));
+    }
+
+    function normalizeHeader(value) {
+      return String(value || "").trim().replace(/\s+/g, "").toLowerCase();
+    }
+
+    function pick(row, field) {
+      const wanted = aliases[field].map(normalizeHeader);
+      for (const [key, value] of Object.entries(row)) {
+        if (wanted.includes(normalizeHeader(key))) {
+          return String(value ?? "").trim();
+        }
+      }
+      return "";
+    }
+
+    function makeKey(person) {
+      if (person.employeeId) return `emp:${person.employeeId.toLowerCase()}`;
+      if (person.email) return `email:${person.email.toLowerCase()}`;
+      return `name:${person.name.toLowerCase()}`;
+    }
+
+    function matchKeys(person) {
+      const keys = [];
+      if (person.employeeId) keys.push(`emp:${person.employeeId.toLowerCase()}`);
+      if (person.email) keys.push(`email:${person.email.toLowerCase()}`);
+      if (!keys.length && person.name) keys.push(`name:${person.name.toLowerCase()}`);
+      return keys;
+    }
+
+    function makeId(person) {
+      return btoa(unescape(encodeURIComponent(makeKey(person)))).replace(/=+$/g, "");
+    }
+
+    function cleanEmail(email) {
+      return String(email || "").trim().replace(/^mailto:/i, "");
+    }
+
+    function cleanTitle(title) {
+      const value = String(title || "").trim();
+      if (!value || value === "(帳號保留)" || value === "（帳號保留）" || value === "帳號保留") return "";
+      return value;
+    }
+
+    function isExcludedDepartment(department) {
+      return EXCLUDED_DEPARTMENTS.has(String(department || "").trim());
+    }
+
+    function migrateStoredPeople(people) {
+      let changed = false;
+      const migrated = people.map(person => {
+        const normalized = normalizePersonIdentity(person);
+        if (
+          normalized.employeeId !== person.employeeId ||
+          normalized.name !== person.name ||
+          normalized.title !== person.title ||
+          normalized.id !== person.id
+        ) {
+          changed = true;
+        }
+        return normalized;
+      });
+      return { people: migrated, changed };
+    }
+
+    function normalizePersonIdentity(person) {
+      const normalized = { ...person };
+      const name = String(normalized.name || "").trim();
+      const employeeId = String(normalized.employeeId || "").trim();
+
+      if (employeeId && name.toLowerCase().startsWith(employeeId.toLowerCase())) {
+        normalized.name = name.slice(employeeId.length).trim();
+      } else if (!employeeId) {
+        const split = splitEmployeeCodeFromName(name);
+        if (split) {
+          normalized.employeeId = split.employeeId;
+          normalized.name = split.name;
+        }
+      }
+
+      normalized.title = cleanTitle(normalized.title);
+      normalized.id = makeId(normalized);
+      return normalized;
+    }
+
+    function splitEmployeeCodeFromName(name) {
+      const match = String(name || "").trim().match(/^([A-Za-z0-9_-]{3,12})([\u4e00-\u9fff].*)$/);
+      if (!match) return null;
+      return {
+        employeeId: match[1],
+        name: match[2].trim()
+      };
+    }
+
+    function personFromRow(row) {
+      const explicitName = pick(row, "name");
+      const lastName = pick(row, "lastName");
+      const firstName = pick(row, "firstName");
+      const lastNameIsEmployeeCode = looksLikeEmployeeCode(lastName) && hasCjk(firstName);
+      const importedEmployeeId = pick(row, "employeeId") || (lastNameIsEmployeeCode ? lastName : "");
+      const combinedName = lastNameIsEmployeeCode ? firstName : `${lastName}${firstName}`.trim();
+      const person = {
+        employeeId: importedEmployeeId,
+        name: explicitName || combinedName,
+        email: cleanEmail(pick(row, "email")),
+        title: cleanTitle(pick(row, "title")),
+        department: pick(row, "department") || "未分類",
+        status: "active",
+        lastSeen: new Date().toISOString()
+      };
+      person.id = makeId(person);
+      return person;
+    }
+
+    function looksLikeEmployeeCode(value) {
+      return /^[A-Za-z0-9_-]{3,12}$/.test(String(value || "").trim());
+    }
+
+    function hasCjk(value) {
+      return /[\u4e00-\u9fff]/.test(String(value || ""));
+    }
+
+    function mergeUpload(rows, fileName) {
+      const incoming = rows
+        .map(personFromRow)
+        .filter(person => (person.name || person.employeeId || person.email) && !isExcludedDepartment(person.department));
+
+      if (!incoming.length) {
+        toast("找不到可匯入的人員資料，請確認 Excel 欄名。", true);
+        return;
+      }
+
+      state.people = dedupeById(incoming.map(person => ({
+        ...person,
+        status: "active",
+        lastSeen: new Date().toISOString()
+      })));
+      syncDepartmentOrder();
+      state.lastUploadName = fileName;
+      state.selectedIds.clear();
+      saveState();
+      render();
+      toast(`已匯入 ${incoming.length} 筆資料，並以最新檔案覆蓋目前名單。`);
+    }
+
+    function parseSheetRows(sheet) {
+      const cells = Object.keys(sheet)
+        .filter(key => key[0] !== "!")
+        .map(key => ({ key, pos: XLSX.utils.decode_cell(key), value: cellText(sheet[key]) }))
+        .filter(cell => cell.value);
+
+      if (!cells.length) return [];
+
+      const rowCounts = new Map();
+      for (const cell of cells) {
+        if (cell.pos.r > 20) continue;
+        rowCounts.set(cell.pos.r, (rowCounts.get(cell.pos.r) || 0) + 1);
+      }
+
+      const headerRow = Array.from(rowCounts.entries())
+        .sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0] ?? 0;
+
+      const headerCells = cells
+        .filter(cell => cell.pos.r === headerRow)
+        .sort((a, b) => a.pos.c - b.pos.c)
+        .filter(cell => !/^__EMPTY/i.test(cell.value));
+
+      if (!headerCells.length) return [];
+
+      const headers = new Map(headerCells.map(cell => [cell.pos.c, cell.value]));
+      const rowMap = new Map();
+
+      for (const cell of cells) {
+        if (cell.pos.r <= headerRow || !headers.has(cell.pos.c)) continue;
+        if (!rowMap.has(cell.pos.r)) rowMap.set(cell.pos.r, {});
+        rowMap.get(cell.pos.r)[headers.get(cell.pos.c)] = cell.value;
+      }
+
+      return Array.from(rowMap.keys())
+        .sort((a, b) => a - b)
+        .map(rowIndex => rowMap.get(rowIndex))
+        .filter(row => Object.values(row).some(Boolean));
+    }
+
+    function cellText(cell) {
+      return String(cell?.w ?? cell?.v ?? "").trim();
+    }
+
+    function dedupeById(people) {
+      const map = new Map();
+      for (const person of people) {
+        map.set(person.id, person);
+      }
+      return Array.from(map.values()).sort((a, b) => {
+        const dept = a.department.localeCompare(b.department, "zh-Hant");
+        if (dept !== 0) return dept;
+        return a.name.localeCompare(b.name, "zh-Hant");
+      }).sort(comparePeopleForDisplay);
+    }
+
+    function comparePeopleForDisplay(a, b) {
+      const titleDiff = titleRank(a.title) - titleRank(b.title);
+      if (titleDiff !== 0) return titleDiff;
+      return compareEmployeeId(a.employeeId, b.employeeId) ||
+        String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant");
+    }
+
+    function titleRank(title) {
+      const index = TITLE_ORDER.indexOf(String(title || "").trim());
+      return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+    }
+
+    function compareEmployeeId(a, b) {
+      const left = String(a || "").trim();
+      const right = String(b || "").trim();
+      if (!left && !right) return 0;
+      if (!left) return 1;
+      if (!right) return -1;
+      return left.localeCompare(right, undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    async function handleFile(file) {
+      if (!file) return;
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = parseSheetRows(sheet);
+      mergeUpload(rows, file.name);
+      const fileInput = document.getElementById("excelFile");
+      if (fileInput) fileInput.value = "";
+    }
+
+    function activePeople() {
+      return state.people;
+    }
+
+    function departments() {
+      const counts = new Map();
+      for (const person of activePeople()) {
+        counts.set(person.department, (counts.get(person.department) || 0) + 1);
+      }
+      return Array.from(counts.entries()).sort((a, b) => compareDepartmentNames(a[0], b[0]));
+    }
+
+    function syncDepartmentOrder() {
+      const existingNames = Array.from(new Set(activePeople().map(person => person.department).filter(Boolean)));
+      const existingSet = new Set(existingNames);
+      const ordered = state.deptOrder.filter(name => existingSet.has(name));
+      const orderedSet = new Set(ordered);
+      const newNames = existingNames
+        .filter(name => !orderedSet.has(name))
+        .sort((a, b) => a.localeCompare(b, "zh-Hant"));
+      state.deptOrder = [...ordered, ...newNames];
+    }
+
+    function compareDepartmentNames(a, b) {
+      const aIndex = state.deptOrder.indexOf(a);
+      const bIndex = state.deptOrder.indexOf(b);
+      if (aIndex !== -1 || bIndex !== -1) {
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
+      }
+      return a.localeCompare(b, "zh-Hant");
+    }
+
+    function displayDepartmentName(name) {
+      return state.deptAliases[name] || name;
+    }
+
+    function setActiveDirectory(dept) {
+      state.activeView = "directory";
+      state.activeDept = dept;
+      render();
+    }
+
+    function setActiveView(view) {
+      state.activeView = view;
+      render();
+    }
+
+    function moveDepartment(index, direction) {
+      syncDepartmentOrder();
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= state.deptOrder.length) return;
+      const nextOrder = [...state.deptOrder];
+      [nextOrder[index], nextOrder[nextIndex]] = [nextOrder[nextIndex], nextOrder[index]];
+      state.deptOrder = nextOrder;
+      saveState();
+      render();
+    }
+
+    function saveDepartmentOrderFromText(text) {
+      const existing = new Set(departments().map(([name]) => name));
+      const seen = new Set();
+      const requested = String(text || "")
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .filter(name => {
+          if (!existing.has(name) || seen.has(name)) return false;
+          seen.add(name);
+          return true;
+        });
+      const rest = state.deptOrder.filter(name => existing.has(name) && !seen.has(name));
+      const restSet = new Set(rest);
+      const newNames = Array.from(existing)
+        .filter(name => !seen.has(name) && !restSet.has(name))
+        .sort((a, b) => a.localeCompare(b, "zh-Hant"));
+      state.deptOrder = [...requested, ...rest, ...newNames];
+      saveState();
+      render();
+      toast("部門排序已儲存。");
+    }
+
+    function filteredPeople() {
+      const keyword = state.search.trim().toLowerCase();
+      return state.people.filter(person => {
+        let deptOk = false;
+        if (state.activeDept === "__all__") {
+          deptOk = true;
+        } else {
+          deptOk = person.department === state.activeDept;
+        }
+
+        if (!deptOk) return false;
+        if (!keyword) return true;
+
+        return [person.name, person.employeeId, person.email]
+          .some(value => String(value || "").toLowerCase().includes(keyword));
+      }).sort(comparePeopleForDisplay);
+    }
+
+    function render() {
+      syncDepartmentOrder();
+      renderDepartments();
+      renderManageMenu();
+      renderMain();
+    }
+
+    function renderDepartments() {
+      const activeCount = activePeople().length;
+      const items = [
+        ["__all__", "全公司", activeCount],
+        ...departments().map(([name, count]) => [name, displayDepartmentName(name), count])
+      ];
+
+      els.deptList.innerHTML = items.map(([id, name, count]) => `
+        <button class="dept-btn ${state.activeDept === id ? "active" : ""}" type="button" data-dept="${escapeAttr(id)}" title="${escapeAttr(name)}">
+          <span class="dept-name">${escapeHtml(name)}</span>
+          <span class="count">${count}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderManageMenu() {
+      document.querySelectorAll("[data-view]").forEach(button => {
+        button.classList.toggle("active", state.activeView === button.dataset.view);
+      });
+    }
+
+    function renderMain() {
+      if (state.activeView === "directory") {
+        els.topbar.style.display = "";
+        els.selectionTools.style.display = "";
+        renderTable();
+      } else {
+        els.topbar.style.display = "none";
+        els.selectionTools.style.display = "none";
+        renderSettings();
+      }
+    }
+
+    function renderTable() {
+      const list = filteredPeople();
+      const deptLabel = state.activeDept === "__all__" ? "全公司" : displayDepartmentName(state.activeDept);
+      els.viewTitle.textContent = deptLabel;
+      els.viewMeta.textContent = state.people.length
+        ? `${list.length} 筆符合目前條件，可複製 Email${state.lastUploadName ? `。最近匯入：${state.lastUploadName}` : ""}`
+        : "尚未上傳資料";
+
+      if (!state.people.length) {
+        els.tableWrap.innerHTML = `<div class="empty"><div><strong>請先上傳公司人員 Excel</strong><span>上傳後可依部門瀏覽、搜尋同仁並快速複製 Email。</span></div></div>`;
+        return;
+      }
+
+      if (!list.length) {
+        els.tableWrap.innerHTML = `<div class="empty"><div><strong>沒有符合條件的資料</strong><span>請調整搜尋字詞或切換部門。</span></div></div>`;
+        return;
+      }
+
+      els.tableWrap.innerHTML = `
+        <table>
+          <colgroup>
+            <col class="col-select">
+            <col class="col-name">
+            <col class="col-id">
+            <col class="col-email">
+            <col class="col-dept">
+            <col class="col-title">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="check-col">選取</th>
+              <th>姓名</th>
+              <th>員工編號</th>
+              <th>Email</th>
+              <th>部門</th>
+              <th>職稱</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${list.map(person => `
+              <tr>
+                <td class="check-col">
+                  <input type="checkbox" data-person-id="${escapeAttr(person.id)}" ${state.selectedIds.has(person.id) ? "checked" : ""} aria-label="選取 ${escapeAttr(person.name || person.email)}">
+                </td>
+                <td>
+                  <div class="person">
+                    <strong>${escapeHtml(person.name || "-")}</strong>
+                  </div>
+                </td>
+                <td>${escapeHtml(person.employeeId || "-")}</td>
+                <td class="email">${escapeHtml(person.email || "-")}</td>
+                <td>${escapeHtml(displayDepartmentName(person.department || "未分類"))}</td>
+                <td>${escapeHtml(person.title || "-")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderSettings() {
+      const titleMap = {
+        upload: "上傳 / 更新 Excel",
+        deptOrder: "部門排序",
+        deptAlias: "部門簡稱",
+        backup: "資料備份",
+        multiDept: "多部門複製"
+      };
+      els.viewTitle.textContent = titleMap[state.activeView] || "管理設定";
+      els.viewMeta.textContent = "設定會儲存在此瀏覽器中。";
+
+      if (state.activeView === "upload") {
+        els.tableWrap.innerHTML = `
+          <div class="settings-panel">
+            <div class="settings-grid">
+              <div class="settings-card">
+                <h3>上傳 / 更新 Excel</h3>
+                <p>支援環興員工 Email 格式。每次上傳都會以最新檔案覆蓋目前名單。</p>
+                <input id="excelFile" type="file" accept=".xlsx,.xls,.csv">
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.activeView === "deptOrder") {
+        const items = departments().map(([name]) => name);
+        els.tableWrap.innerHTML = `
+          <div class="settings-panel">
+            <div class="settings-grid">
+              <div class="settings-card">
+                <h3>部門排序</h3>
+                <p>用上移 / 下移調整左側部門排列。新上傳檔案若有新部門，會先放在最後。</p>
+                <div class="dept-order-list">
+                  ${items.length ? items.map((name, index) => `
+                    <div class="dept-order-row">
+                      <span class="dept-order-name" title="${escapeAttr(name)}">${escapeHtml(displayDepartmentName(name))}</span>
+                      <button class="order-btn" type="button" data-order-index="${index}" data-order-direction="-1" ${index === 0 ? "disabled" : ""} title="上移">↑</button>
+                      <button class="order-btn" type="button" data-order-index="${index}" data-order-direction="1" ${index === items.length - 1 ? "disabled" : ""} title="下移">↓</button>
+                    </div>
+                  `).join("") : `<p>上傳 Excel 後可調整部門順序。</p>`}
+                </div>
+              </div>
+              <div class="settings-card">
+                <h3>直接編輯排序</h3>
+                <p>一行一個部門。儲存後會依文字框順序排列；沒有列到的部門會自動接在最後。</p>
+                <textarea id="deptOrderText" class="order-textarea" spellcheck="false">${escapeHtml(items.join("\n"))}</textarea>
+                <div class="settings-actions" style="margin-top:12px">
+                  <button class="btn primary" type="button" id="saveDeptOrderText">儲存排序</button>
+                  <button class="btn" type="button" id="resetDeptOrderText">帶入目前部門</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.activeView === "deptAlias") {
+        const items = departments().map(([name]) => name);
+        els.tableWrap.innerHTML = `
+          <div class="settings-panel">
+            <div class="settings-grid">
+              <div class="settings-card">
+                <h3>部門簡稱</h3>
+                <p>左側部門與表格內部門都會顯示簡稱；空白則顯示原部門全稱。</p>
+                ${items.length ? items.map(name => `
+                  <div class="alias-row">
+                    <div class="alias-full" title="${escapeAttr(name)}">${escapeHtml(name)}</div>
+                    <input class="alias-input" data-alias-dept="${escapeAttr(name)}" value="${escapeAttr(state.deptAliases[name] || "")}" placeholder="輸入簡稱">
+                  </div>
+                `).join("") : `<p>上傳 Excel 後可設定部門簡稱。</p>`}
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.activeView === "backup") {
+        els.tableWrap.innerHTML = `
+          <div class="settings-panel">
+            <div class="settings-grid">
+              <div class="settings-card">
+                <h3>資料備份輸出</h3>
+                <p>輸出目前名單、部門排序、部門簡稱與最近匯入檔名。</p>
+                <div class="settings-actions">
+                  <button class="btn primary" type="button" id="exportBackup">輸出備份</button>
+                </div>
+              </div>
+              <div class="settings-card">
+                <h3>資料備份匯入</h3>
+                <p>匯入先前輸出的 JSON 備份檔，會覆蓋目前本機資料。</p>
+                <input id="backupFile" type="file" accept=".json,application/json">
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.activeView === "multiDept") {
+        const items = departments().map(([name, count]) => [name, count]);
+        const selectedCount = state.people.filter(person => state.selectedDepartments.has(person.department) && person.email).length;
+        els.tableWrap.innerHTML = `
+          <div class="settings-panel">
+            <div class="settings-grid">
+              <div class="settings-card">
+                <h3>多部門複製</h3>
+                <p>勾選多個部門後，直接選擇複製格式。已選部門共 ${selectedCount} 筆可複製 Email。</p>
+                <div class="dept-order-list">
+                  ${items.length ? items.map(([name, count]) => `
+                    <label class="dept-order-row">
+                      <span class="dept-order-name" title="${escapeAttr(name)}">${escapeHtml(displayDepartmentName(name))}</span>
+                      <span class="count">${count}</span>
+                      <input type="checkbox" data-multi-dept="${escapeAttr(name)}" ${state.selectedDepartments.has(name) ? "checked" : ""}>
+                    </label>
+                  `).join("") : `<p>上傳 Excel 後可選擇部門。</p>`}
+                </div>
+                <div class="settings-actions" style="margin-top:14px">
+                  <button class="btn primary" type="button" data-multi-copy-format="named">複製姓名 + Email</button>
+                  <button class="btn" type="button" data-multi-copy-format="email">複製純 Email</button>
+                  <button class="btn" type="button" id="clearMultiDept">清除勾選</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function visibleActiveIds() {
+      return filteredPeople().map(person => person.id);
+    }
+
+    function peopleForScope(scope) {
+      let people = [];
+      if (scope === "company") {
+        people = activePeople();
+      } else if (scope === "department") {
+        people = filteredPeople();
+      } else if (scope === "selected") {
+        people = state.people.filter(person => state.selectedIds.has(person.id));
+      } else if (scope === "multiDept") {
+        people = state.people.filter(person => state.selectedDepartments.has(person.department));
+      }
+      return people;
+    }
+
+    function recipientsFor(scope, format = "named") {
+      const people = peopleForScope(scope);
+      const formatter = format === "email" ? formatEmailOnly : formatRecipient;
+      return Array.from(new Set(people.map(formatter).filter(Boolean)));
+    }
+
+    function formatEmailOnly(person) {
+      return String(person.email || "").trim();
+    }
+
+    function formatRecipient(person) {
+      const email = String(person.email || "").trim();
+      if (!email) return "";
+      const label = formatRecipientName(person);
+      return label ? `${label} <${email}>` : email;
+    }
+
+    function formatRecipientName(person) {
+      const name = String(person.name || "").trim();
+      const title = cleanTitle(person.title);
+      if (!name) return "";
+      if (!title) return name;
+      if (hasCjk(name)) {
+        const chars = Array.from(name);
+        if (chars.length >= 2) {
+          return `${chars[0]}${title}${chars.slice(1).join("")}`;
+        }
+      }
+      return `${name}${title}`;
+    }
+
+    function openCopyModal(scope) {
+      state.pendingCopyScope = scope;
+      const count = peopleForScope(scope).filter(person => person.email).length;
+      const scopeName = scope === "company" ? "全公司" : scope === "department" ? "目前部門" : "已選人員";
+      els.copyModalMeta.textContent = `${scopeName}共 ${count} 筆可複製 Email，請選擇格式。`;
+      els.copyModal.classList.add("show");
+      els.copyModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeCopyModal() {
+      state.pendingCopyScope = null;
+      els.copyModal.classList.remove("show");
+      els.copyModal.setAttribute("aria-hidden", "true");
+    }
+
+    async function copyEmails(scope, format = "named") {
+      const recipients = recipientsFor(scope, format);
+      if (!recipients.length) {
+        toast("目前沒有可複製的 Email。", true);
+        return;
+      }
+      const text = recipients.join("; ");
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+      toast(`已複製 ${recipients.length} 個收件者。`);
+    }
+
+    function toast(message, warn = false) {
+      els.toast.textContent = message;
+      els.toast.className = `toast show${warn ? " warn" : ""}`;
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => {
+        els.toast.className = "toast";
+      }, 2600);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+
+    function exportBackup() {
+      const backup = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        people: state.people,
+        lastUploadName: state.lastUploadName,
+        deptOrder: state.deptOrder,
+        deptAliases: state.deptAliases
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `email-directory-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast("備份檔已輸出。");
+    }
+
+    async function importBackup(file) {
+      if (!file) return;
+      const backup = JSON.parse(await file.text());
+      state.people = dedupeById(Array.isArray(backup.people) ? backup.people.map(normalizePersonIdentity) : []);
+      state.lastUploadName = backup.lastUploadName || "";
+      state.deptOrder = Array.isArray(backup.deptOrder) ? backup.deptOrder : [];
+      state.deptAliases = backup.deptAliases && typeof backup.deptAliases === "object" ? backup.deptAliases : {};
+      state.selectedIds.clear();
+      saveState();
+      render();
+      toast("備份資料已匯入。");
+    }
+
+    els.deptList.addEventListener("click", event => {
+      const button = event.target.closest("[data-dept]");
+      if (!button) return;
+      setActiveDirectory(button.dataset.dept);
+    });
+
+    document.querySelector(".manage-menu").addEventListener("click", event => {
+      const button = event.target.closest("[data-view]");
+      if (!button) return;
+      setActiveView(button.dataset.view);
+    });
+
+    els.search.addEventListener("input", event => {
+      state.search = event.target.value;
+      renderTable();
+    });
+
+    els.tableWrap.addEventListener("click", event => {
+      const button = event.target.closest("[data-order-index]");
+      if (button) {
+        moveDepartment(Number(button.dataset.orderIndex), Number(button.dataset.orderDirection));
+        return;
+      }
+
+      if (event.target.closest("#exportBackup")) {
+        exportBackup();
+        return;
+      }
+
+      if (event.target.closest("#saveDeptOrderText")) {
+        saveDepartmentOrderFromText(document.getElementById("deptOrderText")?.value || "");
+        return;
+      }
+
+      if (event.target.closest("#resetDeptOrderText")) {
+        const textarea = document.getElementById("deptOrderText");
+        if (textarea) textarea.value = departments().map(([name]) => name).join("\n");
+        return;
+      }
+
+      const multiCopyButton = event.target.closest("[data-multi-copy-format]");
+      if (multiCopyButton) {
+        copyEmails("multiDept", multiCopyButton.dataset.multiCopyFormat);
+        return;
+      }
+
+      if (event.target.closest("#clearMultiDept")) {
+        state.selectedDepartments.clear();
+        renderSettings();
+      }
+    });
+
+    els.tableWrap.addEventListener("input", event => {
+      const aliasInput = event.target.closest("[data-alias-dept]");
+      if (!aliasInput) return;
+      const dept = aliasInput.dataset.aliasDept;
+      const value = aliasInput.value.trim();
+      if (value) {
+        state.deptAliases[dept] = value;
+      } else {
+        delete state.deptAliases[dept];
+      }
+      saveState();
+      renderDepartments();
+    });
+
+    els.tableWrap.addEventListener("change", event => {
+      if (event.target.id === "excelFile") {
+        handleFile(event.target.files[0]).catch(error => {
+          console.error(error);
+          toast("Excel 讀取失敗，請確認檔案格式。", true);
+        });
+        return;
+      }
+
+      if (event.target.id === "backupFile") {
+        importBackup(event.target.files[0]).catch(error => {
+          console.error(error);
+          toast("備份匯入失敗，請確認檔案格式。", true);
+        });
+        return;
+      }
+
+      const multiDeptCheckbox = event.target.closest("[data-multi-dept]");
+      if (multiDeptCheckbox) {
+        if (multiDeptCheckbox.checked) {
+          state.selectedDepartments.add(multiDeptCheckbox.dataset.multiDept);
+        } else {
+          state.selectedDepartments.delete(multiDeptCheckbox.dataset.multiDept);
+        }
+        renderSettings();
+        return;
+      }
+
+      const checkbox = event.target.closest("[data-person-id]");
+      if (!checkbox) return;
+      if (checkbox.checked) {
+        state.selectedIds.add(checkbox.dataset.personId);
+      } else {
+        state.selectedIds.delete(checkbox.dataset.personId);
+      }
+    });
+
+    els.selectVisible.addEventListener("click", () => {
+      for (const id of visibleActiveIds()) state.selectedIds.add(id);
+      render();
+    });
+
+    els.clearSelection.addEventListener("click", () => {
+      state.selectedIds.clear();
+      render();
+    });
+
+    els.copyCompany.addEventListener("click", () => openCopyModal("company"));
+    els.copyDepartment.addEventListener("click", () => openCopyModal("department"));
+    els.copySelected.addEventListener("click", () => openCopyModal("selected"));
+    els.copyMultiDept.addEventListener("click", () => setActiveView("multiDept"));
+
+    els.copyModal.addEventListener("click", event => {
+      if (event.target === els.copyModal) closeCopyModal();
+      const formatButton = event.target.closest("[data-copy-format]");
+      if (!formatButton || !state.pendingCopyScope) return;
+      const scope = state.pendingCopyScope;
+      const format = formatButton.dataset.copyFormat;
+      closeCopyModal();
+      copyEmails(scope, format);
+    });
+
+    els.copyModalClose.addEventListener("click", closeCopyModal);
+
+    loadState();
+    render();
+  </script>
+</body>
+</html>
