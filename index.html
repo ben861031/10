@@ -531,7 +531,7 @@
 
     th, td {
       padding: 12px 14px;
-      border-bottom: 1px solid #edf1f5;
+      border-bottom: 1px solid #e5e7eb;
       text-align: left;
       vertical-align: middle;
       font-size: 15px;
@@ -548,8 +548,17 @@
       white-space: nowrap;
     }
 
+    tbody tr:nth-child(odd) {
+      background: #ffffff;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f6f8fa;
+    }
+
     tbody tr:hover {
-      background: #f8fbfe;
+      background: #eaf3ff;
+      transition: .15s;
     }
 
     .check-col {
