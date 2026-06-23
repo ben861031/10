@@ -1168,6 +1168,7 @@
           <button class="manage-menu-btn" type="button" data-view="upload">上傳 / 更新 Excel</button>
           <button class="manage-menu-btn" type="button" data-view="deptOrder">部門排序</button>
           <button class="manage-menu-btn" type="button" data-view="deptAlias">部門簡稱</button>
+          <button class="manage-menu-btn" type="button" data-view="rosterExport">名單匯出</button>
           <button class="manage-menu-btn" type="button" data-view="backup">資料備份</button>
         </div>
       </div>
@@ -1737,6 +1738,7 @@
         upload: "上傳 / 更新 Excel",
         deptOrder: "部門排序",
         deptAlias: "部門簡稱",
+        rosterExport: "名單匯出",
         backup: "資料備份",
         multiDept: "多部門複製"
       };
@@ -1805,6 +1807,52 @@
                     <input class="alias-input" data-alias-dept="${escapeAttr(name)}" value="${escapeAttr(state.deptAliases[name] || "")}" placeholder="輸入簡稱">
                   </div>
                 `).join("") : `<p>上傳 Excel 後可設定部門簡稱。</p>`}
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.activeView === "rosterExport") {
+        const deptLabel = state.activeDept === "__all__" ? "目前部門" : displayDepartmentName(state.activeDept);
+        const deptCount = state.activeDept === "__all__" ? 0 : filteredPeople().length;
+        const deptItems = departments().map(([name, count]) => [name, count]);
+        els.tableWrap.innerHTML = `
+          <div class="settings-panel">
+            <div class="settings-grid">
+              <div class="settings-card">
+                <h3>全公司名單匯出</h3>
+                <p>匯出目前資料庫中的全部名單，欄位包含部門、姓名、員工編號、Email、職稱。</p>
+                <div class="settings-actions">
+                  <button class="btn primary" type="button" data-export-roster="company">匯出全公司 Excel</button>
+                </div>
+              </div>
+              <div class="settings-card">
+                <h3>目前部門匯出</h3>
+                <p>${state.activeDept === "__all__" ? "請先從左側選擇某一個部門，再回到此頁匯出單一部門。" : `${deptLabel}，共 ${deptCount} 筆。`}</p>
+                <div class="settings-actions">
+                  <button class="btn" type="button" data-export-roster="department" ${state.activeDept === "__all__" ? "disabled" : ""}>匯出目前部門 Excel</button>
+                </div>
+              </div>
+              <div class="settings-card">
+                <h3>各部門分頁匯出</h3>
+                <p>同一個 Excel 檔內依部門建立不同工作表，方便交給各部門確認名單。</p>
+                <div class="settings-actions">
+                  <button class="btn" type="button" data-export-roster="departmentSheets">匯出各部門分頁 Excel</button>
+                </div>
+              </div>
+              <div class="settings-card">
+                <h3>指定部門快速匯出</h3>
+                <p>可直接點選下方部門產生單一部門 Excel。</p>
+                <div class="dept-order-list">
+                  ${deptItems.length ? deptItems.map(([name, count]) => `
+                    <button class="dept-order-row" type="button" data-export-dept="${escapeAttr(name)}">
+                      <span class="dept-order-name" title="${escapeAttr(name)}">${escapeHtml(displayDepartmentName(name))}</span>
+                      <span class="count">${count}</span>
+                    </button>
+                  `).join("") : `<p>上傳 Excel 後可匯出名單。</p>`}
+                </div>
               </div>
             </div>
           </div>
@@ -1970,6 +2018,88 @@
       return escapeHtml(value);
     }
 
+    function exportRoster(scope, departmentName = "") {
+      let rows = [];
+      let fileLabel = "全公司名單";
+
+      if (scope === "company") {
+        rows = activePeople().slice().sort(comparePeopleForDisplay);
+      } else if (scope === "department") {
+        const dept = departmentName || state.activeDept;
+        if (!dept || dept === "__all__") {
+          toast("請先選擇要匯出的部門。", true);
+          return;
+        }
+        rows = state.people
+          .filter(person => person.department === dept)
+          .sort(comparePeopleForDisplay);
+        fileLabel = `${displayDepartmentName(dept)}名單`;
+      }
+
+      if (!rows.length) {
+        toast("目前沒有可匯出的名單資料。", true);
+        return;
+      }
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, makeRosterSheet(rows), safeSheetName(fileLabel));
+      XLSX.writeFile(workbook, `${safeFileName(fileLabel)}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast(`已匯出 ${rows.length} 筆名單。`);
+    }
+
+    function exportRosterByDepartmentSheets() {
+      if (!state.people.length) {
+        toast("目前沒有可匯出的名單資料。", true);
+        return;
+      }
+      const workbook = XLSX.utils.book_new();
+      for (const [dept] of departments()) {
+        const rows = state.people
+          .filter(person => person.department === dept)
+          .sort(comparePeopleForDisplay);
+        if (rows.length) {
+          XLSX.utils.book_append_sheet(workbook, makeRosterSheet(rows), safeSheetName(displayDepartmentName(dept)));
+        }
+      }
+      XLSX.writeFile(workbook, `各部門名單-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast("已匯出各部門分頁 Excel。");
+    }
+
+    function makeRosterSheet(people) {
+      const rows = people.map((person, index) => ({
+        序號: index + 1,
+        部門: displayDepartmentName(person.department || "未分類"),
+        部門原名稱: person.department || "未分類",
+        姓名: person.name || "",
+        員工編號: person.employeeId || "",
+        Email: person.email || "",
+        職稱: person.title || ""
+      }));
+      const sheet = XLSX.utils.json_to_sheet(rows);
+      sheet["!cols"] = [
+        { wch: 8 },
+        { wch: 18 },
+        { wch: 26 },
+        { wch: 14 },
+        { wch: 12 },
+        { wch: 34 },
+        { wch: 14 }
+      ];
+      return sheet;
+    }
+
+    function safeSheetName(name) {
+      return String(name || "名單")
+        .replace(/[\\/?*\[\]:]/g, " ")
+        .slice(0, 31) || "名單";
+    }
+
+    function safeFileName(name) {
+      return String(name || "名單")
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .replace(/\s+/g, "") || "名單";
+    }
+
     function exportBackup() {
       const backup = {
         version: 1,
@@ -2030,6 +2160,23 @@
 
       if (event.target.closest("#exportBackup")) {
         exportBackup();
+        return;
+      }
+
+      const rosterExportButton = event.target.closest("[data-export-roster]");
+      if (rosterExportButton) {
+        const scope = rosterExportButton.dataset.exportRoster;
+        if (scope === "departmentSheets") {
+          exportRosterByDepartmentSheets();
+        } else {
+          exportRoster(scope);
+        }
+        return;
+      }
+
+      const deptExportButton = event.target.closest("[data-export-dept]");
+      if (deptExportButton) {
+        exportRoster("department", deptExportButton.dataset.exportDept);
         return;
       }
 
