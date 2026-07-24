@@ -2444,8 +2444,13 @@
               </div>
               
               <div class="settings-card">
-                <h3>指定部門快速匯出</h3>
-                <p>可直接點選下方部門產生單一部門 Excel。</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                  <div>
+                    <h3 style="margin: 0 0 4px;">指定部門與人數統計匯出</h3>
+                    <p style="margin: 0;">全公司總計 <strong>${state.people.length}</strong> 人。可直接點選下方部門產生單一部門 Excel，或匯出整體人數統計報表。</p>
+                  </div>
+                  <button class="btn primary" type="button" id="exportStats" style="white-space: nowrap;">匯出人數統計 Excel</button>
+                </div>
                 <div class="dept-order-list">
                   ${deptItems.length ? deptItems.map(([name, count]) => `
                     <button class="dept-order-row" type="button" data-export-dept="${escapeAttr(name)}">
@@ -2597,6 +2602,24 @@
       return escapeHtml(value);
     }
 
+    function exportStats() {
+      if (!state.people.length) {
+        toast("目前無資料可供匯出。", true);
+        return;
+      }
+      const rows = [];
+      for (const [name, count] of departments()) {
+        rows.push({ "部門": displayDepartmentName(name), "人數": count });
+      }
+      rows.push({ "部門": "全公司總計", "人數": state.people.length });
+      const sheet = XLSX.utils.json_to_sheet(rows);
+      sheet["!cols"] = [{ wch: 20 }, { wch: 10 }];
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheet, "人數統計");
+      XLSX.writeFile(workbook, `部門人數統計-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast("已匯出部門人數統計 Excel。");
+    }
+
     function exportRoster(scope, departmentName = "") {
       let rows = [];
       let fileLabel = "全公司名單";
@@ -2737,6 +2760,11 @@
 
       if (event.target.closest("#exportBackup")) {
         exportBackup();
+        return;
+      }
+
+      if (event.target.closest("#exportStats")) {
+        exportStats();
         return;
       }
 
