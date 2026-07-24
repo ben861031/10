@@ -70,12 +70,8 @@
     .brand-mark {
       width: 38px;
       height: 38px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #28a27a, #1769aa);
       display: grid;
       place-items: center;
-      color: white;
-      font-weight: 800;
     }
 
     .brand h1 {
@@ -139,29 +135,39 @@
     .dept-order-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .dept-order-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
-      gap: 6px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      min-height: 34px;
-      padding: 6px 6px 6px 10px;
-      border-radius: 10px;
+      min-height: 36px;
+      padding: 6px 12px;
+      border-radius: 8px;
       background: white;
       border: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    
+    .dept-order-row:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     }
 
     .dept-order-name {
       min-width: 0;
       color: #334155;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
+      flex: 1;
     }
 
     .order-btn {
@@ -191,13 +197,15 @@
       width: 100%;
       min-height: 42px;
       border-radius: 12px;
-      padding: 9px 12px;
+      padding: 9px 14px;
       background: #f8fbff;
       color: #334155;
-      border: 1px solid #dbeafe;
-      font-weight: 800;
+      border: 1px solid #e2e8f0;
+      font-size: 15px;
+      font-weight: 600;
       text-align: left;
       transition: .2s;
+      cursor: pointer;
     }
 
     .manage-menu-btn:hover,
@@ -411,11 +419,15 @@
       padding: 9px 13px;
       background: #eef2f7;
       color: #1f2937;
+      border: 0;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       font-weight: 700;
       white-space: nowrap;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     .btn svg {
@@ -425,16 +437,22 @@
     }
 
     .btn.primary {
-      background: var(--accent);
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
       color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, .2);
     }
 
     .btn.primary:hover {
-      background: var(--accent-strong);
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
     }
 
     .btn:hover {
       background: #e0e8f0;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .summary {
@@ -470,6 +488,44 @@
       border-radius: 8px;
       box-shadow: var(--shadow);
       overflow: hidden;
+    }
+
+    .file-upload-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .file-upload-wrap input[type="file"] {
+      display: none;
+    }
+
+    .file-upload-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .file-upload-btn:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+    
+    .file-upload-name {
+      font-size: 14px;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
     }
 
     .table-head {
@@ -567,9 +623,42 @@
     }
 
     input[type="checkbox"] {
-      width: 17px;
-      height: 17px;
-      accent-color: var(--accent);
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 4px;
+      background-color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      vertical-align: middle;
+    }
+
+    input[type="checkbox"]:hover {
+      border-color: #94a3b8;
+    }
+
+    input[type="checkbox"]:checked {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    input[type="checkbox"]:checked::after {
+      content: "";
+      width: 4px;
+      height: 9px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      position: absolute;
+      top: 1px;
+      left: 5px;
     }
 
     .person {
@@ -951,13 +1040,10 @@
     }
 
     .brand-mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: #eff6ff;
-      color: #2563eb;
-      font-size: 22px;
-      box-shadow: inset 0 0 0 1px #dbeafe;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
     }
 
     .brand-mark svg {
@@ -967,8 +1053,9 @@
     }
 
     .brand h1 {
+      margin: 0;
       color: #0f172a;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
     }
 
@@ -1091,32 +1178,7 @@
       background: #94a3b8;
     }
 
-    .btn {
-      min-height: 42px;
-      border-radius: 12px;
-      background: #ffffff;
-      color: #334155;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, .04);
-      transition: .2s;
-      font-size: 15px;
-    }
 
-    .btn:hover {
-      background: #f8fafc;
-      transform: translateY(-1px);
-    }
-
-    .btn.primary {
-      border: 0;
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
-      color: white;
-      box-shadow: 0 12px 24px rgba(37, 99, 235, .20);
-    }
-
-    .btn.primary:hover {
-      background: linear-gradient(135deg, #1d4ed8, #2563eb);
-    }
 
     .summary {
       grid-template-columns: repeat(4, minmax(170px, 1fr));
@@ -1459,20 +1521,9 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 4h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
-            <path d="M8 4v16"></path>
-            <path d="M11.5 9.5a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z"></path>
-            <path d="M10.8 16a3.7 3.7 0 0 1 6.4 0"></path>
-            <path d="M3 8h2"></path>
-            <path d="M3 12h2"></path>
-            <path d="M3 16h2"></path>
-          </svg>
+          <img src="logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
-        <div>
-          <h1>Email 查詢系統</h1>
-          <p>Excel 匯入與快速複製</p>
-        </div>
+        <h1>Email 查詢系統</h1>
       </div>
 
       <div>
@@ -1484,10 +1535,8 @@
         <div class="manage-title">管理區</div>
         <div class="manage-menu">
           <button class="manage-menu-btn" type="button" data-view="upload">上傳 / 更新 Excel</button>
-          <button class="manage-menu-btn" type="button" data-view="deptOrder">部門排序</button>
-          <button class="manage-menu-btn" type="button" data-view="deptAlias">部門簡稱</button>
-          <button class="manage-menu-btn" type="button" data-view="rosterExport">名單匯出</button>
-          <button class="manage-menu-btn" type="button" data-view="backup">資料備份</button>
+          <button class="manage-menu-btn" type="button" data-view="settings">系統設定與備份</button>
+          <button class="manage-menu-btn" type="button" data-view="export">名單匯出專區</button>
         </div>
       </div>
     </aside>
@@ -2268,10 +2317,8 @@
     function renderSettings() {
       const titleMap = {
         upload: "上傳 / 更新 Excel",
-        deptOrder: "部門排序",
-        deptAlias: "部門簡稱",
-        rosterExport: "名單匯出",
-        backup: "資料備份",
+        settings: "系統設定與備份",
+        export: "名單匯出專區",
         multiDept: "多部門複製"
       };
       els.viewTitle.textContent = titleMap[state.activeView] || "管理設定";
@@ -2284,7 +2331,11 @@
               <div class="settings-card">
                 <h3>上傳 / 更新 Excel</h3>
                 <p>上傳後會先比對「異動前 / 異動後」，勾選要套用的資料後才會更新名單。</p>
-                <input id="excelFile" type="file" accept=".xlsx,.xls,.csv">
+                <div class="file-upload-wrap">
+                  <label for="excelFile" class="file-upload-btn">選擇 Excel 檔案</label>
+                  <span id="excelFileName" class="file-upload-name">未選擇任何檔案</span>
+                  <input id="excelFile" type="file" accept=".xlsx,.xls,.csv">
+                </div>
               </div>
             </div>
             ${renderUploadPreview()}
@@ -2293,11 +2344,13 @@
         return;
       }
 
-      if (state.activeView === "deptOrder") {
+      if (state.activeView === "settings") {
         const items = departments().map(([name]) => name);
+
         els.tableWrap.innerHTML = `
           <div class="settings-panel">
             <div class="settings-grid">
+              
               <div class="settings-card">
                 <h3>部門排序</h3>
                 <p>用上移 / 下移調整左側部門排列。新上傳檔案若有新部門，會先放在最後。</p>
@@ -2311,6 +2364,7 @@
                   `).join("") : `<p>上傳 Excel 後可調整部門順序。</p>`}
                 </div>
               </div>
+              
               <div class="settings-card">
                 <h3>直接編輯排序</h3>
                 <p>一行一個部門。儲存後會依文字框順序排列；沒有列到的部門會自動接在最後。</p>
@@ -2320,17 +2374,7 @@
                   <button class="btn" type="button" id="resetDeptOrderText">帶入目前部門</button>
                 </div>
               </div>
-            </div>
-          </div>
-        `;
-        return;
-      }
 
-      if (state.activeView === "deptAlias") {
-        const items = departments().map(([name]) => name);
-        els.tableWrap.innerHTML = `
-          <div class="settings-panel">
-            <div class="settings-grid">
               <div class="settings-card">
                 <h3>部門簡稱</h3>
                 <p>左側部門與表格內部門都會顯示簡稱；空白則顯示原部門全稱。</p>
@@ -2341,19 +2385,40 @@
                   </div>
                 `).join("") : `<p>上傳 Excel 後可設定部門簡稱。</p>`}
               </div>
+
+              <div class="settings-card">
+                <h3>資料備份輸出</h3>
+                <p>輸出目前名單、部門排序、部門簡稱與最近匯入檔名。</p>
+                <div class="settings-actions">
+                  <button class="btn primary" type="button" id="exportBackup">輸出備份</button>
+                </div>
+              </div>
+              
+              <div class="settings-card">
+                <h3>資料備份匯入</h3>
+                <p>匯入先前輸出的 JSON 備份檔，會覆蓋目前本機資料。</p>
+                <div class="file-upload-wrap">
+                  <label for="backupFile" class="file-upload-btn">選擇 JSON 備份檔</label>
+                  <span id="backupFileName" class="file-upload-name">未選擇任何檔案</span>
+                  <input id="backupFile" type="file" accept=".json,application/json">
+                </div>
+              </div>
+
             </div>
           </div>
         `;
         return;
       }
 
-      if (state.activeView === "rosterExport") {
+      if (state.activeView === "export") {
         const deptLabel = state.activeDept === "__all__" ? "目前部門" : displayDepartmentName(state.activeDept);
         const deptCount = state.activeDept === "__all__" ? 0 : filteredPeople().length;
         const deptItems = departments().map(([name, count]) => [name, count]);
+
         els.tableWrap.innerHTML = `
           <div class="settings-panel">
             <div class="settings-grid">
+
               <div class="settings-card">
                 <h3>全公司名單匯出</h3>
                 <p>匯出目前資料庫中的全部名單，欄位包含部門、姓名、員工編號、Email、職稱。</p>
@@ -2361,6 +2426,7 @@
                   <button class="btn primary" type="button" data-export-roster="company">匯出全公司 Excel</button>
                 </div>
               </div>
+              
               <div class="settings-card">
                 <h3>目前部門匯出</h3>
                 <p>${state.activeDept === "__all__" ? "請先從左側選擇某一個部門，再回到此頁匯出單一部門。" : `${deptLabel}，共 ${deptCount} 筆。`}</p>
@@ -2368,6 +2434,7 @@
                   <button class="btn" type="button" data-export-roster="department" ${state.activeDept === "__all__" ? "disabled" : ""}>匯出目前部門 Excel</button>
                 </div>
               </div>
+              
               <div class="settings-card">
                 <h3>各部門分頁匯出</h3>
                 <p>同一個 Excel 檔內依部門建立不同工作表，方便交給各部門確認名單。</p>
@@ -2375,6 +2442,7 @@
                   <button class="btn" type="button" data-export-roster="departmentSheets">匯出各部門分頁 Excel</button>
                 </div>
               </div>
+              
               <div class="settings-card">
                 <h3>指定部門快速匯出</h3>
                 <p>可直接點選下方部門產生單一部門 Excel。</p>
@@ -2387,34 +2455,12 @@
                   `).join("") : `<p>上傳 Excel 後可匯出名單。</p>`}
                 </div>
               </div>
+
             </div>
           </div>
         `;
         return;
       }
-
-      if (state.activeView === "backup") {
-        els.tableWrap.innerHTML = `
-          <div class="settings-panel">
-            <div class="settings-grid">
-              <div class="settings-card">
-                <h3>資料備份輸出</h3>
-                <p>輸出目前名單、部門排序、部門簡稱與最近匯入檔名。</p>
-                <div class="settings-actions">
-                  <button class="btn primary" type="button" id="exportBackup">輸出備份</button>
-                </div>
-              </div>
-              <div class="settings-card">
-                <h3>資料備份匯入</h3>
-                <p>匯入先前輸出的 JSON 備份檔，會覆蓋目前本機資料。</p>
-                <input id="backupFile" type="file" accept=".json,application/json">
-              </div>
-            </div>
-          </div>
-        `;
-        return;
-      }
-
       if (state.activeView === "multiDept") {
         const items = departments().map(([name, count]) => [name, count]);
         const selectedCount = state.people.filter(person => state.selectedDepartments.has(person.department) && person.email).length;
@@ -2602,7 +2648,6 @@
       const rows = people.map((person, index) => ({
         序號: index + 1,
         部門: displayDepartmentName(person.department || "未分類"),
-        部門原名稱: person.department || "未分類",
         姓名: person.name || "",
         員工編號: person.employeeId || "",
         Email: person.email || "",
@@ -2612,7 +2657,6 @@
       sheet["!cols"] = [
         { wch: 8 },
         { wch: 18 },
-        { wch: 26 },
         { wch: 14 },
         { wch: 12 },
         { wch: 34 },
