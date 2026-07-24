@@ -780,8 +780,8 @@
     }
 
     .copy-format-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 10px;
     }
 
@@ -1589,7 +1589,8 @@
       <p id="copyModalMeta">請選擇要複製的 Email 格式。</p>
       <div class="copy-format-actions">
         <button class="btn primary" type="button" data-copy-format="named">姓名 + Email</button>
-        <button class="btn" type="button" data-copy-format="email">純 Email</button>
+        <button class="btn primary" type="button" data-copy-format="dept_named">部門-姓名 + Email</button>
+        <button class="btn primary" type="button" data-copy-format="email">純 Email</button>
       </div>
       <button class="btn modal-close" type="button" id="copyModalClose">取消</button>
     </div>
@@ -2486,7 +2487,8 @@
                 </div>
                 <div class="settings-actions" style="margin-top:14px">
                   <button class="btn primary" type="button" data-multi-copy-format="named">複製姓名 + Email</button>
-                  <button class="btn" type="button" data-multi-copy-format="email">複製純 Email</button>
+                  <button class="btn primary" type="button" data-multi-copy-format="dept_named">複製部門-姓名 + Email</button>
+                  <button class="btn primary" type="button" data-multi-copy-format="email">複製純 Email</button>
                   <button class="btn" type="button" id="clearMultiDept">清除勾選</button>
                 </div>
               </div>
@@ -2516,8 +2518,18 @@
 
     function recipientsFor(scope, format = "named") {
       const people = peopleForScope(scope);
-      const formatter = format === "email" ? formatEmailOnly : formatRecipient;
+      let formatter = formatRecipient;
+      if (format === "email") formatter = formatEmailOnly;
+      if (format === "dept_named") formatter = formatDeptRecipient;
       return Array.from(new Set(people.map(formatter).filter(Boolean)));
+    }
+
+    function formatDeptRecipient(person) {
+      const email = String(person.email || "").trim();
+      if (!email) return "";
+      const label = formatRecipientName(person);
+      const dept = displayDepartmentName(person.department || "未分類");
+      return label ? `${dept}-${label} <${email}>` : email;
     }
 
     function formatEmailOnly(person) {
